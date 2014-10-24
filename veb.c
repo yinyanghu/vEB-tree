@@ -56,7 +56,31 @@ struct veb_tree * new_tree(int u) {
     return ptr;
 }
 
+void delete_tree(struct veb_tree *root) {
+    if (root->summary != NULL)
+        delete_tree(root->summary);
+    if (root->subtree != NULL) {
+        int i;
+        for (i = 0; i < root->u_up; ++ i)
+            delete_tree(root->subtree[i]);
+    }
+    free(root);
+}
+
+int minimum(struct veb_tree *root) {
+    return root->min;
+}
+
+int maximum(struct veb_tree *root) {
+    return root->max;
+}
+
+
+struct veb_tree     *tree;
+
 int main() {
+    tree = new_tree(100);
+    delete_tree(tree);
     return 0;
 }
 
