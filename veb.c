@@ -3,14 +3,19 @@
 #include <stdlib.h>
 #include <math.h>
 
+typedef unsigned int bool;
+#define true 1
+#define false 0
+
 struct veb_tree {
     unsigned int        u;
-    unsigned int        min, max;
+    int                 min, max;
     unsigned int        u_down, u_up;
     struct veb_tree     *summary;
     struct veb_tree     **subtree; 
 };
 
+//int __builtin_popcount (unsigned int x);
 /*
 unsigned int count_bit(unsigned int k) {
     unsigned int c = 0;
@@ -28,15 +33,19 @@ unsigned int count_bit(unsigned int k) {
 }
 */
 
-unsigned int high(unsigned int x, unsigned int u) {
-    return (x / (int)sqrt(u));
+unsigned int High(unsigned int x, unsigned int u) {
+    return (x / (unsigned int)sqrt(u));
 }
 
-unsigned int low(unsigned int x, unsigned int u) {
-    return (x % (int)sqrt(u));
+unsigned int Low(unsigned int x, unsigned int u) {
+    return (x % (unsigned int)sqrt(u));
 }
 
-struct veb_tree * new_tree(int u) {
+unsigned int Index(unsigned int x, unsigned int y, unsigned int u) {
+    return x * (unsigned int)sqrt(u) + y;
+}
+
+struct veb_tree * new_tree(unsigned int u) {
     struct veb_tree *ptr = (struct veb_tree *)malloc(sizeof(struct veb_tree));
     ptr->u = u;
     ptr->min = ptr->max = -1;
@@ -45,8 +54,8 @@ struct veb_tree * new_tree(int u) {
         ptr->summary = NULL;
     }
     else {
-        int i;
-        ptr->u_down = (int)sqrt(u);
+        unsigned int i;
+        ptr->u_down = (unsigned int)sqrt(u);
         ptr->u_up = u - ptr->u_down;
         ptr->summary = new_tree(ptr->u_up);
         ptr->subtree = (struct veb_tree **)malloc(ptr->u_up * sizeof(struct veb_tree *));
@@ -60,7 +69,7 @@ void delete_tree(struct veb_tree *root) {
     if (root->summary != NULL)
         delete_tree(root->summary);
     if (root->subtree != NULL) {
-        int i;
+        unsigned int i;
         for (i = 0; i < root->u_up; ++ i)
             delete_tree(root->subtree[i]);
     }
@@ -74,6 +83,68 @@ int minimum(struct veb_tree *root) {
 int maximum(struct veb_tree *root) {
     return root->max;
 }
+
+bool find(struct veb_tree *root, unsigned int key) {
+    if (key == root->min || key == root->max)
+        return true;
+    else if (root->u == 2)
+        return false;
+    return find(root->subtree[High(key, root->u)], Low(key, root->u));
+}
+
+void insert(struct veb_tree *root, unsigned int key) {
+    if (root->min == -1) {
+        root->min = root->max = key;
+        return;
+    }
+    if (key < root->min) {
+        int k = key; key = root->min; root->min = k;
+    }
+    if (root->u > 2) {
+        struct veb_tree *next = root->subtree[High(key, root->u)];
+        if (minimum(next) == -1) {
+            insert(root->summary, High(key, root->u));
+            next->max = next->min = Low(key, root->u);
+        }
+        else
+            insert(next, Low(key, root->u));
+    }
+    if (key > root->max)
+        root->max = key;
+}
+
+void delete(struct veb_tree *root, unsigned int key) {
+    if (root->min == root->max) {
+        root->min = root->max = -1;
+        return;
+    }
+    if (root->u == 2) {
+        root->max = root->min = (key == 0) ? 1 : 0;
+        return;
+    }
+    if (key == root->min) {
+        unsigned int next= minimum(root->summary);
+        key = Index(next, minimum(root->subtree[next]), root->u);
+        root->min = key;
+    }
+    unsigned int high = High(key, root->u);
+    unsigned int low = Low(key, root->u);
+    struct veb_tree *next = root->subtree[high];
+    delete(next, low); 
+    if (minimum(next) == -1) {
+        delete(root->summary, high);
+        if (key == root->max) {
+            unsigned int summary_max = maximum(root->summary);
+            if (summary_max == -1)
+                root->max = root->min;
+            else
+                root->max = Index(summary_max, maximum(root->subtree[summary_max]), root->u);
+        }
+    }
+    else if (key == root->max)
+        root->max = Index(high, maximum(root->subtree[high]), root->u);
+}
+
 
 
 struct veb_tree     *tree;
