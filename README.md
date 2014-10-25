@@ -1,6 +1,12 @@
 van Emde Boas tree
 ---
 
+Compile
+---
+```bash
+$ gcc veb.c -lm
+```
+
 Reference
 ---
 

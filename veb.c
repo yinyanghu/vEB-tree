@@ -2,10 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-
-typedef unsigned int bool;
-#define true 1
-#define false 0
+#include <stdbool.h>
 
 struct veb_tree {
     unsigned int        u;
@@ -45,7 +42,7 @@ unsigned int Index(unsigned int x, unsigned int y, unsigned int u) {
     return x * (unsigned int)sqrt(u) + y;
 }
 
-struct veb_tree * new_tree(unsigned int u) {
+struct veb_tree * build(unsigned int u) {
     struct veb_tree *ptr = (struct veb_tree *)malloc(sizeof(struct veb_tree));
     ptr->u = u;
     ptr->min = ptr->max = -1;
@@ -56,22 +53,24 @@ struct veb_tree * new_tree(unsigned int u) {
     else {
         unsigned int i;
         ptr->u_down = (unsigned int)sqrt(u);
-        ptr->u_up = u - ptr->u_down;
-        ptr->summary = new_tree(ptr->u_up);
+        ptr->u_up = u / ptr->u_down;
+        if (ptr->u_up * ptr->u_down < u)
+            ++ ptr->u_up;
+        ptr->summary = build(ptr->u_up);
         ptr->subtree = (struct veb_tree **)malloc(ptr->u_up * sizeof(struct veb_tree *));
         for (i = 0; i < ptr->u_up; ++ i)
-            ptr->subtree[i] = new_tree(ptr->u_down);
+            ptr->subtree[i] = build(ptr->u_down);
     }
     return ptr;
 }
 
-void delete_tree(struct veb_tree *root) {
+void destroy(struct veb_tree *root) {
     if (root->summary != NULL)
-        delete_tree(root->summary);
+        destroy(root->summary);
     if (root->subtree != NULL) {
         unsigned int i;
         for (i = 0; i < root->u_up; ++ i)
-            delete_tree(root->subtree[i]);
+            destroy(root->subtree[i]);
     }
     free(root);
 }
@@ -196,8 +195,47 @@ int predecessor(struct veb_tree *root, unsigned int key) {
 struct veb_tree     *tree;
 
 int main() {
-    tree = new_tree(100);
-    delete_tree(tree);
+    int u;
+    scanf("%d", &u);
+    int n;
+    scanf("%d", &n);
+    tree = build(u);
+
+    while (n --) {
+        printf("%d\n", n);
+        int k, x;
+        scanf("%d", &k);
+        if (k == 0) {
+            scanf("%d", &x);
+            if (!find(tree, x))
+                insert(tree, x);
+        }
+        else if (k == 1) {
+            scanf("%d", &x);
+            if (find(tree, x))
+                delete(tree, x);
+        }
+        else if (k == 2) {
+            scanf("%d", &x);
+            printf("%d", find(tree, x) ? 1 : 0);
+        }
+        else if (k == 3) {
+            scanf("%d", &x);
+            printf("%d", predecessor(tree, x));
+        }
+        else if (k == 4) {
+            scanf("%d", &x);
+            printf("%d", successor(tree, x));
+        }
+        else if (k == 5) {
+            printf("%d", maximum(tree));
+        }
+        else {
+            printf("%d", minimum(tree));
+        }
+    }
+
+    destroy(tree);
     return 0;
 }
 
