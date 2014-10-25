@@ -145,6 +145,52 @@ void delete(struct veb_tree *root, unsigned int key) {
         root->max = Index(high, maximum(root->subtree[high]), root->u);
 }
 
+int successor(struct veb_tree *root, unsigned int key) {
+    if (root->u == 2) {
+        if (key == 0 && root->max == 1)
+            return 1;
+        return -1;
+    }
+    if (root->min != -1 && key < root->min)
+        return root->min;
+    int high = High(key, root->u);
+    int low = Low(key, root->u);
+    int max_low = maximum(root->subtree[high]);
+    if (max_low != -1 && low < max_low) {
+        int offset = successor(root->subtree[high], low);
+        return Index(high, offset, root->u);
+    }
+    int next = successor(root->summary, high);
+    if (next == -1)
+        return -1;
+    int offset = minimum(root->subtree[next]);
+    return Index(next, offset, root->u);
+}
+
+int predecessor(struct veb_tree *root, unsigned int key) {
+    if (root->u == 2) {
+        if (key == 1 && root->min == 0)
+            return 0;
+        return -1;
+    }
+    if (root->max != -1 && key > root->max)
+        return root->max;
+    int high = High(key, root->u);
+    int low = Low(key, root->u);
+    int min_low = minimum(root->subtree[high]);
+    if (min_low != -1 && low > min_low) {
+        int offset = predecessor(root->subtree[high], low);
+        return Index(high, offset, root->u);
+    }
+    int next = predecessor(root->summary, high);
+    if (next == -1) {
+        if (root->min != -1 && key > root->min)
+            return root->min;
+        return -1;
+    }
+    int offset = maximum(root->subtree[next]);
+    return Index(next, offset, root->u);
+}
 
 
 struct veb_tree     *tree;
