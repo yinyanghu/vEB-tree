@@ -7,7 +7,7 @@
 struct veb_tree {
     unsigned int        u;
     int                 min, max;
-    unsigned int        u_down, u_up;
+    //unsigned int        u_down, u_up;
     struct veb_tree     *summary;
     struct veb_tree     **subtree; 
 };
@@ -31,35 +31,45 @@ unsigned int count_bit(unsigned int k) {
 */
 
 unsigned int High(unsigned int x, unsigned int u) {
-    return (x / (unsigned int)sqrt(u));
+    int k = (unsigned int)sqrt(u);
+    if (k == 1) ++ k;
+    return (x / k);
 }
 
 unsigned int Low(unsigned int x, unsigned int u) {
-    return (x % (unsigned int)sqrt(u));
+    int k = (unsigned int)sqrt(u);
+    if (k == 1) ++ k;
+    return (x % k);
 }
 
 unsigned int Index(unsigned int x, unsigned int y, unsigned int u) {
-    return x * (unsigned int)sqrt(u) + y;
+    int k = (unsigned int)sqrt(u);
+    if (k == 1) ++ k;
+    return x * k + y;
 }
 
 struct veb_tree * build(unsigned int u) {
     struct veb_tree *ptr = (struct veb_tree *)malloc(sizeof(struct veb_tree));
     ptr->u = u;
     ptr->min = ptr->max = -1;
-    if (u <= 2) {
+    if (u == 1)
+        fprintf(stderr, "u == 1!\n");
+    if (u == 2) {
         ptr->subtree = NULL;
         ptr->summary = NULL;
     }
     else {
         unsigned int i;
-        ptr->u_down = (unsigned int)sqrt(u);
-        ptr->u_up = u / ptr->u_down;
-        if (ptr->u_up * ptr->u_down < u)
-            ++ ptr->u_up;
-        ptr->summary = build(ptr->u_up);
-        ptr->subtree = (struct veb_tree **)malloc(ptr->u_up * sizeof(struct veb_tree *));
-        for (i = 0; i < ptr->u_up; ++ i)
-            ptr->subtree[i] = build(ptr->u_down);
+        unsigned int u_down = (unsigned int)sqrt(u);
+        if (u_down == 1)
+            ++ u_down;
+        unsigned int u_up = u / u_down;
+        if (u_up * u_down < u)
+            ++ u_up;
+        ptr->summary = build(u_up);
+        ptr->subtree = (struct veb_tree **)malloc(u_up * sizeof(struct veb_tree *));
+        for (i = 0; i < u_up; ++ i)
+            ptr->subtree[i] = build(u_down);
     }
     return ptr;
 }
@@ -69,7 +79,13 @@ void destroy(struct veb_tree *root) {
         destroy(root->summary);
     if (root->subtree != NULL) {
         unsigned int i;
-        for (i = 0; i < root->u_up; ++ i)
+        unsigned int u_down = (unsigned int)sqrt(root->u);
+        if (u_down == 1)
+            ++ u_down;
+        unsigned int u_up = root->u / u_down;
+        if (u_up * u_down < root->u)
+            ++ u_up;
+        for (i = 0; i < u_up; ++ i)
             destroy(root->subtree[i]);
     }
     free(root);
@@ -202,7 +218,6 @@ int main() {
     tree = build(u);
 
     while (n --) {
-        printf("%d\n", n);
         int k, x;
         scanf("%d", &k);
         if (k == 0) {
@@ -217,21 +232,21 @@ int main() {
         }
         else if (k == 2) {
             scanf("%d", &x);
-            printf("%d", find(tree, x) ? 1 : 0);
+            printf("%d\n", find(tree, x) ? 1 : 0);
         }
         else if (k == 3) {
             scanf("%d", &x);
-            printf("%d", predecessor(tree, x));
+            printf("%d\n", predecessor(tree, x));
         }
         else if (k == 4) {
             scanf("%d", &x);
-            printf("%d", successor(tree, x));
+            printf("%d\n", successor(tree, x));
         }
         else if (k == 5) {
-            printf("%d", maximum(tree));
+            printf("%d\n", maximum(tree));
         }
         else {
-            printf("%d", minimum(tree));
+            printf("%d\n", minimum(tree));
         }
     }
 

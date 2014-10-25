@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define u       1024*1024
+#define u       2048*2048*64
 #define n       10000
 #define first   n/10
 
