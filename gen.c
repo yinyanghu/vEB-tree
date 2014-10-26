@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define u       1024*1024
-#define n       10000
+#define u       1024*1024*16*4
+#define n       100000
 #define first   n/10
 
 int main() {
