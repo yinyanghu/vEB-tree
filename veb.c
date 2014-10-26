@@ -19,8 +19,6 @@ struct veb_tree * build(unsigned int u) {
     struct veb_tree *ptr = (struct veb_tree *)malloc(sizeof(struct veb_tree));
     ptr->u = u;
     ptr->min = ptr->max = -1;
-    if (u == 0)
-        fprintf(stderr, "fuck!!!!!\n");
     if (u == 1) {
         ptr->subtree = NULL;
         ptr->summary = NULL;
